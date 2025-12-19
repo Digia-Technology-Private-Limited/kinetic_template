@@ -4,7 +4,6 @@ import 'package:share_plus/share_plus.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../data/models/catalog_models.dart';
-import '../../data/services/analytics_service.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/wishlist_provider.dart';
 import '../../widgets/common/icon_buttons.dart';
@@ -41,12 +40,6 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
   @override
   void initState() {
     super.initState();
-    // Track product view
-    AnalyticsService().trackProductViewed(
-      productId: widget.product.id,
-      productName: widget.product.title,
-      price: widget.product.price ?? 0.0,
-    );
   }
 
   @override
@@ -78,10 +71,6 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
             child: IconButton(
               icon: const Icon(Icons.share, color: AppColors.black100),
               onPressed: () {
-                AnalyticsService().trackProductShared(
-                  productId: product.id,
-                  productName: product.title,
-                );
                 Share.share(
                   'Check out ${product.title}!\nPrice: \$${product.price?.toStringAsFixed(2)}\n',
                   subject: product.title,
@@ -97,7 +86,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                 return HeartButton(
                   isLiked: isLiked,
                   onTap: () {
-                    wishlist.toggleLike(product.id, productName: product.title);
+                    wishlist.toggleLike(product.id);
                   },
                 );
               },
@@ -307,14 +296,6 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                       product,
                       _quantity,
                       size: _selectedSize,
-                    );
-
-                    // Track analytics
-                    AnalyticsService().trackAddToCart(
-                      productId: product.id,
-                      productName: product.title,
-                      price: product.price ?? 0.0,
-                      quantity: _quantity,
                     );
 
                     if (context.mounted && cart.errorMessage != null) {

@@ -68,10 +68,7 @@ class ProductCard extends StatelessWidget {
                         return HeartButton(
                           isLiked: isLiked,
                           onTap: () {
-                            wishlist.toggleLike(
-                              product.id,
-                              productName: product.title,
-                            );
+                            wishlist.toggleLike(product.id);
                           },
                         );
                       },

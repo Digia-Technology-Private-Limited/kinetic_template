@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../data/services/api_service.dart';
 import '../data/services/storage_service.dart';
-import '../data/services/analytics_service.dart';
 import '../data/models/cart_models.dart';
 import '../data/models/catalog_models.dart';
 import '../core/utils/toast_utils.dart';
@@ -120,11 +119,6 @@ class CartProvider with ChangeNotifier {
 
   Future<void> removeFromCart(int index) async {
     if (index >= 0 && index < _localCartItems.length) {
-      final item = _localCartItems[index];
-      AnalyticsService().trackRemoveFromCart(
-        productId: item.product.id,
-        productName: item.product.title,
-      );
       _localCartItems.removeAt(index);
       await _saveLocalCart();
       ToastUtils.showInfo('Item removed from cart');

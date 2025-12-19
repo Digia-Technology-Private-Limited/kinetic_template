@@ -5,7 +5,6 @@ import 'core/router/app_router.dart';
 import 'data/services/dio_client.dart';
 import 'data/services/api_service.dart';
 import 'data/services/storage_service.dart';
-import 'data/services/analytics_service.dart';
 import 'providers/store_provider.dart';
 import 'providers/cart_provider.dart';
 import 'providers/wishlist_provider.dart';
@@ -13,10 +12,6 @@ import 'providers/wishlist_provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final storageService = await StorageService.init();
-
-  // Initialize Analytics
-  await AnalyticsService().initialize();
-
   runApp(KineticApp(storageService: storageService));
 }
 

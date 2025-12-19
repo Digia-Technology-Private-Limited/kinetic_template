@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
-import '../../data/services/analytics_service.dart';
 import '../../widgets/common/icon_buttons.dart';
 import '../../widgets/common/primary_button.dart';
 import '../../widgets/checkout/progress_indicator.dart';
@@ -154,12 +153,6 @@ class CheckoutPage extends StatelessWidget {
                         ToastUtils.showError('Your cart is empty');
                         return;
                       }
-
-                      // Track checkout initiated
-                      AnalyticsService().trackCheckoutInitiated(
-                        totalAmount: cart.total,
-                        itemCount: cart.itemCount,
-                      );
 
                       // Generate order ID
                       final orderId = IdGenerator.generateOrderId();

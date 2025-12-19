@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../data/services/storage_service.dart';
-import '../data/services/analytics_service.dart';
 
 class WishlistProvider with ChangeNotifier {
   final StorageService _storageService;
@@ -21,25 +20,11 @@ class WishlistProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> toggleLike(String productId, {String? productName}) async {
-    final isLiking = !_likedProductIds.contains(productId);
-
+  Future<void> toggleLike(String productId) async {
     if (_likedProductIds.contains(productId)) {
       _likedProductIds.remove(productId);
-      if (productName != null) {
-        AnalyticsService().trackProductUnliked(
-          productId: productId,
-          productName: productName,
-        );
-      }
     } else {
       _likedProductIds.add(productId);
-      if (productName != null) {
-        AnalyticsService().trackProductLiked(
-          productId: productId,
-          productName: productName,
-        );
-      }
     }
     await _storageService.saveWishlist(_likedProductIds.toList());
     notifyListeners();

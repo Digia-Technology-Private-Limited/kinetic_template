@@ -1,16 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_cashfree_pg_sdk/api/cferrorresponse/cferrorresponse.dart';
-import 'package:flutter_cashfree_pg_sdk/api/cfpayment/cfdropcheckoutpayment.dart';
-import 'package:flutter_cashfree_pg_sdk/api/cfpaymentgateway/cfpaymentgatewayservice.dart';
-import 'package:flutter_cashfree_pg_sdk/utils/cfexceptions.dart';
-import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/utils/toast_utils.dart';
-import '../../data/services/dio_client.dart';
-import '../../data/services/cashfree_service.dart';
-import '../../data/services/analytics_service.dart';
-import '../order/order_confirmation_page.dart';
 
 class PaymentPage extends StatefulWidget {
   final double amount;
@@ -33,93 +24,16 @@ class PaymentPage extends StatefulWidget {
 }
 
 class _PaymentPageState extends State<PaymentPage> {
-  late CFPaymentGatewayService _cfPaymentGatewayService;
-  late CashfreeService _cashfreeService;
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _cfPaymentGatewayService = CFPaymentGatewayService();
-    _cfPaymentGatewayService.setCallback(_verifyPayment, _onError);
-    _cashfreeService = CashfreeService(
-      Provider.of<DioClient>(context, listen: false).dio,
-    );
-  }
-
-  void _verifyPayment(String orderId) {
-    print("Payment Successful - Order ID: $orderId");
-
-    // Track payment success
-    AnalyticsService().trackPaymentSuccess(
-      orderId: orderId,
-      amount: widget.amount,
-      paymentMethod: 'Cashfree',
-    );
-
-    ToastUtils.showSuccess("Payment Successful!");
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) =>
-            OrderConfirmationPage(orderId: orderId, amount: widget.amount),
-      ),
-    );
-  }
-
-  void _onError(CFErrorResponse errorResponse, String orderId) {
-    print("Payment Error: ${errorResponse.getMessage()}");
-
-    // Track payment failure
-    AnalyticsService().trackPaymentFailed(
-      orderId: orderId,
-      amount: widget.amount,
-      errorReason: errorResponse.getMessage(),
-    );
-
-    ToastUtils.showError("Payment failed: ${errorResponse.getMessage()}");
-    Navigator.pop(context);
   }
 
   Future<void> _initiatePayment() async {
     setState(() => _isLoading = true);
-
-    try {
-      final session = await _cashfreeService.createPaymentSession(
-        amount: widget.amount,
-        customerName: widget.customerName,
-        customerEmail: widget.customerEmail,
-        customerPhone: widget.customerPhone,
-        orderId: widget.orderId,
-      );
-
-      if (session == null) {
-        ToastUtils.showError("Failed to create payment session");
-        setState(() => _isLoading = false);
-        return;
-      }
-
-      // Track payment initiation
-      AnalyticsService().trackPaymentInitiated(
-        orderId: widget.orderId,
-        amount: widget.amount,
-      );
-
-      final cfDropCheckout = CFDropCheckoutPaymentBuilder()
-          .setSession(session)
-          .build();
-
-      _cfPaymentGatewayService.doPayment(cfDropCheckout);
-    } on CFException catch (e) {
-      ToastUtils.showError(e.message);
-      print("Cashfree Exception: ${e.message}");
-    } catch (e) {
-      ToastUtils.showError("Payment initialization failed");
-      print("Error: $e");
-    } finally {
-      setState(() => _isLoading = false);
-    }
+    ToastUtils.showError("Payment initialization failed");
   }
 
   @override
@@ -206,7 +120,7 @@ class _PaymentPageState extends State<PaymentPage> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    "You will be redirected to Cashfree's secure payment gateway",
+                    "You will be redirected to the payment gateway",
                     style: AppTextStyles.bodyMediumMedium.copyWith(
                       color: Colors.grey,
                     ),
