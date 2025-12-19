@@ -38,11 +38,11 @@ class SizeSelectionItem extends StatelessWidget {
   final VoidCallback onTap;
 
   const SizeSelectionItem({
-    Key? key,
+    super.key,
     required this.size,
     required this.isSelected,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

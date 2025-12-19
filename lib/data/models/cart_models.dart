@@ -1,5 +1,63 @@
 import 'catalog_models.dart';
 
+// Local cart item for offline storage
+class LocalCartItem {
+  final Product product;
+  final int quantity;
+  final String? selectedSize;
+  final String? selectedColor;
+
+  LocalCartItem({
+    required this.product,
+    required this.quantity,
+    this.selectedSize,
+    this.selectedColor,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'product': {
+        'id': product.id,
+        'title': product.title,
+        'handle': product.handle,
+        'description': product.description,
+        'availableForSale': product.availableForSale,
+        'featuredImage': product.featuredImage,
+        'price': product.price,
+        'compareAtPrice': product.compareAtPrice,
+      },
+      'quantity': quantity,
+      'selectedSize': selectedSize,
+      'selectedColor': selectedColor,
+    };
+  }
+
+  factory LocalCartItem.fromJson(Map<String, dynamic> json) {
+    return LocalCartItem(
+      product: Product.fromJson(json['product']),
+      quantity: json['quantity'] ?? 1,
+      selectedSize: json['selectedSize'],
+      selectedColor: json['selectedColor'],
+    );
+  }
+
+  LocalCartItem copyWith({
+    Product? product,
+    int? quantity,
+    String? selectedSize,
+    String? selectedColor,
+  }) {
+    return LocalCartItem(
+      product: product ?? this.product,
+      quantity: quantity ?? this.quantity,
+      selectedSize: selectedSize ?? this.selectedSize,
+      selectedColor: selectedColor ?? this.selectedColor,
+    );
+  }
+
+  double get itemTotal => (product.price ?? 0) * quantity;
+}
+
 class Cart {
   final String id;
   final String? checkoutUrl;

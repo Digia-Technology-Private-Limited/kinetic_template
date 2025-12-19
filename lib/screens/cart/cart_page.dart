@@ -4,10 +4,13 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../providers/cart_provider.dart';
 import '../../widgets/common/icon_buttons.dart';
-import '../../widgets/cart/add_to_cart_button.dart'; // Reuse button for "Checkout"
+import '../../widgets/cart/add_to_cart_button.dart';
+import '../../widgets/cart/cart_item_card.dart';
+import '../../widgets/cart/cart_summary.dart';
+import '../checkout/checkout_page.dart';
 
 class CartPage extends StatefulWidget {
-  const CartPage({Key? key}) : super(key: key);
+  const CartPage({super.key});
 
   @override
   State<CartPage> createState() => _CartPageState();
@@ -17,181 +20,142 @@ class _CartPageState extends State<CartPage> {
   @override
   Widget build(BuildContext context) {
     final cartProvider = context.watch<CartProvider>();
-    final cart = cartProvider.cart;
-
-    // Handle empty or null cart
-    if (cart == null || cart.lines.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(title: const Text("Cart"), centerTitle: true),
-        body: const Center(child: Text("Your Cart is Empty")),
-      );
-    }
+    final items = cartProvider.localCartItems;
 
     return Scaffold(
       backgroundColor: AppColors.white100,
       appBar: AppBar(
-        title: const Text(
-          "Cart",
-          style: TextStyle(fontWeight: FontWeight.bold),
+        leading: BackArrowButton(onPressed: () => Navigator.pop(context)),
+        title: Text(
+          "My Cart (${cartProvider.itemCount})",
+          style: AppTextStyles.h2Medium.copyWith(fontSize: 18),
         ),
         centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         actions: [
-          // Could have "Remove All"
-        ],
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: cart.lines.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 16),
-              itemBuilder: (context, index) {
-                final line = cart.lines[index];
-                return Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        line.product.featuredImage ??
-                            'https://via.placeholder.com/80',
-                        width: 80,
-                        height: 80,
-                        fit: BoxFit.cover,
-                      ),
+          if (items.isNotEmpty)
+            TextButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Clear Cart'),
+                    content: const Text(
+                      'Are you sure you want to remove all items?',
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            line.product.title,
-                            style: AppTextStyles.bodyLargeBold,
-                          ),
-                          const SizedBox(height: 4),
-                          // Variant title if available?
-                          Text(
-                            "\$${line.amountPerQuantity?.toStringAsFixed(2) ?? '0.00'}",
-                            style: AppTextStyles.bodySmallBold,
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              QuantityButton(
-                                icon: Icons.remove,
-                                onTap: () {
-                                  if (line.quantity > 0) {
-                                    // Update logic: q-1. If 0, maybe remove?
-                                    context.read<CartProvider>().updateQuantity(
-                                      line.id,
-                                      line.quantity - 1,
-                                    );
-                                  }
-                                },
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                "${line.quantity}",
-                                style: AppTextStyles.bodySmallMedium,
-                              ),
-                              const SizedBox(width: 12),
-                              QuantityButton(
-                                icon: Icons.add,
-                                onTap: () {
-                                  context.read<CartProvider>().updateQuantity(
-                                    line.id,
-                                    line.quantity + 1,
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                        ],
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cancel'),
                       ),
-                    ),
-                  ],
+                      TextButton(
+                        onPressed: () {
+                          cartProvider.clearCart();
+                          Navigator.pop(context);
+                        },
+                        child: const Text(
+                          'Clear',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ],
+                  ),
                 );
               },
+              child: Text(
+                'Clear',
+                style: AppTextStyles.bodyMediumMedium.copyWith(
+                  color: Colors.red,
+                ),
+              ),
             ),
-          ),
-          // Coupon code?
-
-          // Summary
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
+        ],
+      ),
+      body: items.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.shopping_cart_outlined,
+                    size: 100,
+                    color: Colors.grey,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Your Cart is Empty',
+                    style: AppTextStyles.h2Medium.copyWith(color: Colors.grey),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Add items to get started',
+                    style: AppTextStyles.bodyMediumMedium.copyWith(
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : Column(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Subtotal",
-                      style: AppTextStyles.bodyLargeMedium.copyWith(
-                        color: Colors.grey,
-                      ),
-                    ),
-                    Text(
-                      "\$${cart.subtotal.toStringAsFixed(2)}",
-                      style: AppTextStyles.bodyLargeBold,
-                    ),
-                  ],
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      final item = items[index];
+                      return CartItemCard(
+                        item: item,
+                        onRemove: () {
+                          cartProvider.removeFromCart(index);
+                        },
+                        onQuantityChanged: (newQuantity) {
+                          cartProvider.updateQuantity(index, newQuantity);
+                        },
+                      );
+                    },
+                  ),
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Shipping Cost",
-                      style: AppTextStyles.bodyLargeMedium.copyWith(
-                        color: Colors.grey,
+                // Summary Section
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, -2),
                       ),
-                    ),
-                    Text("\$8.00", style: AppTextStyles.bodyLargeBold),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Tax",
-                      style: AppTextStyles.bodyLargeMedium.copyWith(
-                        color: Colors.grey,
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      CartSummary(
+                        subtotal: cartProvider.subtotal,
+                        tax: cartProvider.tax,
+                        shipping: cartProvider.shipping,
+                        total: cartProvider.total,
                       ),
-                    ),
-                    Text("\$0.00", style: AppTextStyles.bodyLargeBold),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Total",
-                      style: AppTextStyles.bodyLargeMedium.copyWith(
-                        color: Colors.grey,
+                      const SizedBox(height: 16),
+                      AddToCartPlaceOrderButton(
+                        price: "\$${cartProvider.total.toStringAsFixed(2)}",
+                        buttonText: "Proceed to Checkout",
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const CheckoutPage(),
+                            ),
+                          );
+                        },
                       ),
-                    ),
-                    Text(
-                      "\$${(cart.total + 8.00).toStringAsFixed(2)}",
-                      style: AppTextStyles.bodyLargeBold,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
-          ),
-
-          AddToCartPlaceOrderButton(
-            price: "\$${(cart.total + 8.00).toStringAsFixed(2)}",
-            buttonText: "Checkout",
-            onPressed: () {
-              // Navigate to simple Checkout Page
-            },
-          ),
-        ],
-      ),
     );
   }
 }

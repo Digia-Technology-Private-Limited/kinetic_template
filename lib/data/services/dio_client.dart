@@ -2,10 +2,10 @@ import 'package:dio/dio.dart';
 import '../../core/constants/api_constants.dart';
 
 class DioClient {
-  final Dio _dio;
+  final Dio dio;
 
   DioClient()
-    : _dio = Dio(
+    : dio = Dio(
         BaseOptions(
           baseUrl: ApiConstants.baseUrl,
           headers: ApiConstants.defaultHeaders,
@@ -13,7 +13,7 @@ class DioClient {
           receiveTimeout: const Duration(seconds: 15),
         ),
       ) {
-    _dio.interceptors.add(
+    dio.interceptors.add(
       LogInterceptor(
         request: true,
         requestHeader: true,
@@ -27,7 +27,7 @@ class DioClient {
 
   Future<Response> post(Map<String, dynamic> data) async {
     try {
-      final response = await _dio.post('', data: data);
+      final response = await dio.post('', data: data);
       return response;
     } catch (e) {
       rethrow;

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:octo_image/octo_image.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../data/models/catalog_models.dart'; // Ensure this model exists
 import '../common/icon_buttons.dart';
+import '../../providers/wishlist_provider.dart';
 
 class ProductCard extends StatelessWidget {
   final Product product;
@@ -60,9 +62,19 @@ class ProductCard extends StatelessWidget {
                   Positioned(
                     top: 8,
                     right: 8,
-                    child: HeartButton(
-                      isLiked: false, // Manage state externally or use Provider
-                      onTap: () {},
+                    child: Consumer<WishlistProvider>(
+                      builder: (context, wishlist, _) {
+                        final isLiked = wishlist.isLiked(product.id);
+                        return HeartButton(
+                          isLiked: isLiked,
+                          onTap: () {
+                            wishlist.toggleLike(
+                              product.id,
+                              productName: product.title,
+                            );
+                          },
+                        );
+                      },
                     ),
                   ),
               ],

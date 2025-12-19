@@ -4,7 +4,7 @@ import '../../core/theme/app_text_styles.dart';
 import '../../widgets/common/icon_buttons.dart';
 
 class TrackOrderPage extends StatelessWidget {
-  const TrackOrderPage({Key? key}) : super(key: key);
+  const TrackOrderPage({super.key});
 
   @override
   Widget build(BuildContext context) {

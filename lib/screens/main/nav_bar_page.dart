@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
+import '../../providers/cart_provider.dart';
+import '../../widgets/common/cart_badge.dart';
 import '../../screens/home/home_page.dart';
 import '../../screens/cart/cart_page.dart';
 import '../../screens/profile/notifications_page.dart'; // Placeholder
@@ -38,25 +41,37 @@ class _NavBarPageState extends State<NavBarPage> {
         unselectedItemColor: AppColors.black50, // Using 50% black
         showSelectedLabels: false,
         showUnselectedLabels: false,
-        items: const [
-          BottomNavigationBarItem(
+        items: [
+          const BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
             activeIcon: Icon(Icons.home),
             label: 'Home',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.notifications_outlined),
             activeIcon: Icon(Icons.notifications),
             label: 'Notifications',
           ),
           BottomNavigationBarItem(
-            icon: Icon(
-              Icons.shopping_bag_outlined,
-            ), // Or receipt for orders if designed
-            activeIcon: Icon(Icons.shopping_bag),
+            icon: Consumer<CartProvider>(
+              builder: (context, cart, child) {
+                return CartBadge(
+                  icon: const Icon(Icons.shopping_bag_outlined),
+                  count: cart.itemCount,
+                );
+              },
+            ),
+            activeIcon: Consumer<CartProvider>(
+              builder: (context, cart, child) {
+                return CartBadge(
+                  icon: const Icon(Icons.shopping_bag),
+                  count: cart.itemCount,
+                );
+              },
+            ),
             label: 'Cart',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
             activeIcon: Icon(Icons.person),
             label: 'Profile',

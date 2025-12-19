@@ -1,18 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../data/models/catalog_models.dart';
+import '../../data/services/analytics_service.dart';
 import '../../providers/cart_provider.dart';
+import '../../providers/wishlist_provider.dart';
 import '../../widgets/common/icon_buttons.dart';
 import '../../widgets/product/pdp_carousel.dart';
 import '../../widgets/product/item_selectors.dart';
 import '../../widgets/cart/add_to_cart_button.dart';
 import '../../widgets/common/loading_state.dart';
+import '../../widgets/product/youtube_video_player.dart';
+import '../../widgets/product/expandable_section.dart';
+import '../../core/utils/toast_utils.dart';
 
 class ProductDetailsPage extends StatefulWidget {
   final Product product;
-  const ProductDetailsPage({Key? key, required this.product}) : super(key: key);
+  const ProductDetailsPage({super.key, required this.product});
 
   @override
   State<ProductDetailsPage> createState() => _ProductDetailsPageState();
@@ -31,6 +37,17 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
   String _selectedSize = 'M';
   Color _selectedColor = Colors.red;
   int _quantity = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    // Track product view
+    AnalyticsService().trackProductViewed(
+      productId: widget.product.id,
+      productName: widget.product.title,
+      price: widget.product.price ?? 0.0,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,8 +74,34 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
         elevation: 0,
         actions: [
           Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: IconButton(
+              icon: const Icon(Icons.share, color: AppColors.black100),
+              onPressed: () {
+                AnalyticsService().trackProductShared(
+                  productId: product.id,
+                  productName: product.title,
+                );
+                Share.share(
+                  'Check out ${product.title}!\nPrice: \$${product.price?.toStringAsFixed(2)}\n',
+                  subject: product.title,
+                );
+              },
+            ),
+          ),
+          Padding(
             padding: const EdgeInsets.only(right: 16),
-            child: HeartButton(isLiked: false),
+            child: Consumer<WishlistProvider>(
+              builder: (context, wishlist, _) {
+                final isLiked = wishlist.isLiked(product.id);
+                return HeartButton(
+                  isLiked: isLiked,
+                  onTap: () {
+                    wishlist.toggleLike(product.id, productName: product.title);
+                  },
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -154,12 +197,85 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
 
                   const SizedBox(height: 24),
 
-                  Text("Description", style: AppTextStyles.bodyLargeBold),
-                  const SizedBox(height: 8),
-                  Text(
-                    product.description ?? "No description available.",
-                    style: AppTextStyles.bodySmallMedium.copyWith(
-                      color: Colors.grey,
+                  // Product Videos
+                  Text("Product Videos", style: AppTextStyles.bodyLargeBold),
+                  const SizedBox(height: 12),
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.black,
+                    ),
+                    clipBehavior: Clip.hardEdge,
+                    child: const YoutubeVideoPlayer(
+                      videoId: 'dQw4w9WgXcQ', // Demo video ID
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Expandable Sections
+                  ExpandableSection(
+                    title: "Description",
+                    initiallyExpanded: true,
+                    content: Text(
+                      product.description ?? "No description available.",
+                      style: AppTextStyles.bodySmallMedium.copyWith(
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+
+                  ExpandableSection(
+                    title: "Size Guide",
+                    content: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Size Chart:", style: AppTextStyles.bodySmallBold),
+                        const SizedBox(height: 8),
+                        Text(
+                          "S - Chest: 34-36\"\nM - Chest: 38-40\"\nL - Chest: 42-44\"\nXL - Chest: 46-48\"\n2XL - Chest: 50-52\"",
+                          style: AppTextStyles.bodySmallMedium.copyWith(
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  ExpandableSection(
+                    title: "Shipping & Returns",
+                    content: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Free shipping on orders over \$50",
+                          style: AppTextStyles.bodySmallMedium.copyWith(
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          "30-day return policy for unworn items with tags attached.",
+                          style: AppTextStyles.bodySmallMedium.copyWith(
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  ExpandableSection(
+                    title: "Product Details",
+                    content: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Material: 100% Cotton\nCare: Machine wash cold\nOrigin: Made in USA\nStyle: ${product.handle ?? 'N/A'}",
+                          style: AppTextStyles.bodySmallMedium.copyWith(
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
 
@@ -188,14 +304,21 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                     // For now, use product.id as proxy.
 
                     await context.read<CartProvider>().addToCart(
-                      product.id,
+                      product,
                       _quantity,
+                      size: _selectedSize,
                     );
 
-                    if (context.mounted && cart.errorMessage == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Added to Cart")),
-                      );
+                    // Track analytics
+                    AnalyticsService().trackAddToCart(
+                      productId: product.id,
+                      productName: product.title,
+                      price: product.price ?? 0.0,
+                      quantity: _quantity,
+                    );
+
+                    if (context.mounted && cart.errorMessage != null) {
+                      ToastUtils.showError(cart.errorMessage!);
                     }
                   },
                 ),

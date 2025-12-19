@@ -8,7 +8,7 @@ import '../../widgets/product/category_tiles.dart';
 import 'selected_category_page.dart';
 
 class ShopByCategoryPage extends StatelessWidget {
-  const ShopByCategoryPage({Key? key}) : super(key: key);
+  const ShopByCategoryPage({super.key});
 
   @override
   Widget build(BuildContext context) {

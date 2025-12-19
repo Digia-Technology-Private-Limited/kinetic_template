@@ -47,12 +47,12 @@ class CategoryVertical extends StatelessWidget {
   final VoidCallback onTap;
 
   const CategoryVertical({
-    Key? key,
+    super.key,
     required this.title,
     required this.imageUrl,
     required this.count,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -4,7 +4,7 @@ import '../../core/theme/app_text_styles.dart';
 import '../../widgets/common/list_items.dart';
 
 class NotificationPage extends StatelessWidget {
-  const NotificationPage({Key? key}) : super(key: key);
+  const NotificationPage({super.key});
 
   @override
   Widget build(BuildContext context) {

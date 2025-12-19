@@ -67,11 +67,11 @@ class NotificationListItem extends StatelessWidget {
   final DateTime time; // Display relative time potentially
 
   const NotificationListItem({
-    Key? key,
+    super.key,
     required this.message,
     this.isRead = false,
     required this.time,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

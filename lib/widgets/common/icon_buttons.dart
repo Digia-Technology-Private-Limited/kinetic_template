@@ -36,7 +36,7 @@ class CircularIconButton extends StatelessWidget {
 
 class BackArrowButton extends StatelessWidget {
   final VoidCallback? onPressed;
-  const BackArrowButton({Key? key, this.onPressed}) : super(key: key);
+  const BackArrowButton({super.key, this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +49,7 @@ class BackArrowButton extends StatelessWidget {
 
 class RightArrowButton extends StatelessWidget {
   final VoidCallback? onPressed;
-  const RightArrowButton({Key? key, this.onPressed}) : super(key: key);
+  const RightArrowButton({super.key, this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -65,8 +65,7 @@ class HeartButton extends StatelessWidget {
   final bool isLiked;
   final VoidCallback? onTap;
 
-  const HeartButton({Key? key, this.isLiked = false, this.onTap})
-    : super(key: key);
+  const HeartButton({super.key, this.isLiked = false, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -92,8 +91,7 @@ class CheckButton extends StatelessWidget {
   final bool isChecked;
   final VoidCallback? onTap;
 
-  const CheckButton({Key? key, this.isChecked = false, this.onTap})
-    : super(key: key);
+  const CheckButton({super.key, this.isChecked = false, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -122,8 +120,7 @@ class QuantityButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onTap;
 
-  const QuantityButton({Key? key, required this.icon, this.onTap})
-    : super(key: key);
+  const QuantityButton({super.key, required this.icon, this.onTap});
 
   @override
   Widget build(BuildContext context) {

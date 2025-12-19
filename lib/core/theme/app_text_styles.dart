@@ -43,6 +43,13 @@ class AppTextStyles {
     color: AppColors.black100,
   );
 
+  static TextStyle get bodyMediumMedium => GoogleFonts.poppins(
+    fontSize: 16,
+    fontWeight: FontWeight.w500,
+    height: 1.5,
+    color: AppColors.black100,
+  );
+
   // Poppins/700/12 - Bold (Caption)
   static TextStyle get bodySmallBold => GoogleFonts.poppins(
     fontSize: 12,

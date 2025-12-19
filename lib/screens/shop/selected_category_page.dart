@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../providers/store_provider.dart';
@@ -14,10 +15,10 @@ class SelectedCategoryPage extends StatefulWidget {
   final String title;
 
   const SelectedCategoryPage({
-    Key? key,
+    super.key,
     required this.handle,
     required this.title,
-  }) : super(key: key);
+  });
 
   @override
   State<SelectedCategoryPage> createState() => _SelectedCategoryPageState();
@@ -85,28 +86,30 @@ class _SelectedCategoryPageState extends State<SelectedCategoryPage> {
                   ),
                   const SizedBox(height: 16),
                   Expanded(
-                    child: GridView.builder(
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            mainAxisSpacing: 16,
-                            crossAxisSpacing: 16,
-                            childAspectRatio: 0.65,
-                          ),
+                    child: MasonryGridView.count(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 16,
+                      crossAxisSpacing: 16,
                       itemCount: _collection!.products.length,
                       itemBuilder: (context, index) {
                         final prod = _collection!.products[index];
-                        return ProductCard(
-                          product: prod,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    ProductDetailsPage(product: prod),
-                              ),
-                            );
-                          },
+                        // Varying heights for staggered effect
+                        final height = index % 3 == 0 ? 280.0 : 260.0;
+                        
+                        return SizedBox(
+                          height: height,
+                          child: ProductCard(
+                            product: prod,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      ProductDetailsPage(product: prod),
+                                ),
+                              );
+                            },
+                          ),
                         );
                       },
                     ),

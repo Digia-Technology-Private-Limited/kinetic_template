@@ -3,6 +3,7 @@ plugins {
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -41,4 +42,22 @@ android {
 
 flutter {
     source = "../.."
+}
+
+// --------- MoEngage & Other Dependencies ---------
+dependencies {
+    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+    implementation("androidx.core:core:1.9.0")
+    implementation("androidx.appcompat:appcompat:1.4.0")
+    implementation("androidx.lifecycle:lifecycle-process:2.5.1")
+    
+    // MoEngage SDK (required for version 7.x)
+    implementation("com.moengage:moe-android-sdk:12.10.01")
+    
+    // Glide - required by MoEngage for in-app messaging
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    
+    // Firebase - required by MoEngage
+    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    implementation("com.google.firebase:firebase-messaging")
 }

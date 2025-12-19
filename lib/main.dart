@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/theme/app_colors.dart';
+import 'core/router/app_router.dart';
 import 'data/services/dio_client.dart';
 import 'data/services/api_service.dart';
 import 'data/services/storage_service.dart';
+import 'data/services/analytics_service.dart';
 import 'providers/store_provider.dart';
 import 'providers/cart_provider.dart';
-import 'screens/main/nav_bar_page.dart';
+import 'providers/wishlist_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final storageService = await StorageService.init();
+
+  // Initialize Analytics
+  await AnalyticsService().initialize();
 
   runApp(KineticApp(storageService: storageService));
 }
@@ -47,8 +52,11 @@ class KineticApp extends StatelessWidget {
             storageService,
           )..init(), // attempt init on update if needed or handle internal check
         ),
+        ChangeNotifierProvider<WishlistProvider>(
+          create: (context) => WishlistProvider(storageService),
+        ),
       ],
-      child: MaterialApp(
+      child: MaterialApp.router(
         title: 'Digia E-Commerce',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
@@ -58,10 +66,7 @@ class KineticApp extends StatelessWidget {
           useMaterial3: true,
           fontFamily: 'Poppins',
         ),
-        home: const NavBarPage(),
-        routes: {
-          // Defined routes if needed, otherwise using onGenerateRoute or direct navigation
-        },
+        routerConfig: AppRouter.router,
       ),
     );
   }
